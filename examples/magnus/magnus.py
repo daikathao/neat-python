@@ -2,11 +2,14 @@ import os
 import neat
 import visualize
 import resources
+import matplotlib as plt
 
 X_train = resources.X_train
 y_train = resources.y_train
 X_test = resources.X_test
 y_test = resources.y_test
+
+
 
 bf = 0
 bg = 0
@@ -14,7 +17,7 @@ def training(genomes, config):
     nets = []
     ge = []
     for genome_id, genome in genomes:
-        genome.fitness = len(X_train)
+        genome.fitness = len(X_train) * 150
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         nets.append(net)
         ge.append(genome)
@@ -24,13 +27,17 @@ def training(genomes, config):
             if ge[j].fitness < 0:
                 continue
             output = nets[j].activate(X_train[i])
-            if output[0] < 0 and y_train[i] == 0\
-                    or output[0] > 0 and y_train[i] == 1:
-                # have correct answer
-                ge[j].fitness = ge[j].fitness + 1
-            else:
-                # have incorrect answer
-                ge[j].fitness = ge[j].fitness - 2
+
+            ge[j].fitness -= abs(output[0] - y_train[i])
+            k = y_train[i]
+            t = 0
+            # if output[0] < 0 and y_train[i] == 0\
+            #         or output[0] > 0 and y_train[i] == 1:
+            #     # have correct answer
+            #     ge[j].fitness = ge[j].fitness + 1
+            # else:
+            #     # have incorrect answer
+            #     ge[j].fitness = ge[j].fitness - 2
 
             # output = abs(o[0])
             # # if 0.1 < output < 0.3:
@@ -53,9 +60,9 @@ def run(config_file):
     population = neat.Population(config)
 
     # Add a stdout reporter to show progress in the terminal.
-    # population.add_reporter(neat.StdOutReporter(True))
-    # stats = neat.StatisticsReporter()
-    # population.add_reporter(stats)
+    population.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    population.add_reporter(stats)
 
     # Run for up to 300 generations.
     best_genome = population.run(training, 300)

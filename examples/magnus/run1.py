@@ -59,9 +59,9 @@ def run(config_file):
     population = neat.Population(config)
 
     # Add a stdout reporter to show progress in the terminal.
-    population.add_reporter(neat.StdOutReporter(True))
-    stats = neat.StatisticsReporter()
-    population.add_reporter(stats)
+    # population.add_reporter(neat.StdOutReporter(True))
+    # stats = neat.StatisticsReporter()
+    # population.add_reporter(stats)
 
     # Run for up to 300 generations.
     best_genome = population.run(training, 300)

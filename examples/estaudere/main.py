@@ -14,6 +14,7 @@ if __name__ == '__main__':
             print(i)
 
         while not maze.is_game_over():
+            # maze.print_maze()
             state, _ = maze.get_state_and_reward()  # get the current state
             action = robot.choose_action(state, maze.allowed_states[state])  # choose an action (explore or exploit)
             maze.update_maze(action)  # update the maze according to the action

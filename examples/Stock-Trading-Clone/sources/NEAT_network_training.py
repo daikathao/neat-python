@@ -6,9 +6,6 @@ import constants
 import math
 from bookmaker import Bookmaker
 
-input = []
-input_index = 0
-
 
 def training(genomes, config):
     # We have x number of genomes. X is specified in the configuration file
@@ -28,16 +25,13 @@ def training(genomes, config):
         ge.append(genome)
 
     # getting data for this generation
-    global input_index
-    (macd, signal, data_set) = input[input_index]
-    input_index = input_index + 1
-    input_index = input_index % len(input)
-    rows_number = len(data_set.index)
-
     ticker = "MBB"
     savedFile = os.path.join(constants.ROOT_DIR, constants.PATH_STOCK_DATA, ticker + '.csv')
     data = pd.read_csv(savedFile)
     data_set = data[constants.CSV_OPEN_COLUMN]
+    macd = data['MACD']
+    signal = data['MACDs']
+    rows_number = len(data.index)
 
     # starting simulation, from 35 because we need to omit all of the zeroes that appears during calculating MACD
     for i in range(35, rows_number):

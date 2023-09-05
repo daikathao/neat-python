@@ -6,36 +6,33 @@ import constants
 from bookmaker import Bookmaker
 
 
-def simulate_stock_market(best_genome, config, data, macd, signal, start_index, current_capital):
+def simulate_stock_market(best_genome, config, current_capital):
     net = neat.nn.FeedForwardNetwork.create(best_genome, config)
     bookmaker = Bookmaker(current_capital)
-    last_index = len(data.index)
-    for i in range(start_index + 1, last_index):
+
+    savedFile = os.path.join(constants.ROOT_DIR, constants.PATH_STOCK_DATA, ticker + '.csv')
+    data = pd.read_csv(savedFile)
+    data_set = data[constants.CSV_OPEN_COLUMN]
+    macd = data['MACD']
+    signal = data['MACDs']
+    rows_number = len(data.index)
+
+    for i in range(29, rows_number):
         decision = net.activate((macd[i], signal[i]))  # decision can be a real number form 0 to 1
 
         # if there is a missing data cell, then substitute it with the latest stock value
         index = i
-        while pd.isnull(data[index]):
+        while pd.isnull(data_set[index]):
             index -= 1
         if decision[0] > 0.9:
-            bookmaker.buy_all_stocks(data[index])
-            print('Buy----' + str(index) + '------' + str(data[index]))
+            bookmaker.buy_all_stocks(data_set[index], data['Date'][index])
         elif decision[0] < 0.1:
-            bookmaker.sell_all_stocks(data[index])
-            print('Sell----' + str(index) + '------' + str(data[index]))
+            bookmaker.sell_all_stocks(data_set[index], data['Date'][index])
 
     # On the last day we sell all of our stocks
-    bookmaker.sell_all_stocks(data[last_index - 1])
-    print('Sellk----' + str(data[last_index - 1]))
+    bookmaker.sell_all_stocks(data_set[rows_number - 1], data['Date'][rows_number - 1])
     return bookmaker.capital
 
-
-def load_macd(path):
-    with open(path + '_macd', 'rb') as fp:
-        macd = pickle.load(fp)
-    with open(path + '_signal', 'rb') as fp:
-        signal = pickle.load(fp)
-    return macd, signal
 
 
 def main():
@@ -53,24 +50,12 @@ def main():
         print('You need to train a network first')
         return
 
-    test_data_path = os.path.join(constants.ROOT_DIR, constants.PATH_CALCULATED_MACD_TEST)
-    stock_data_path = os.path.join(constants.ROOT_DIR, constants.PATH_STOCK_DATA)
-    for _, _, file_names in os.walk(stock_data_path):
-        for file_name in file_names:
-            full_load_path_stock_data = os.path.join(stock_data_path, file_name)
-            data = pd.read_csv(full_load_path_stock_data)
-            data_set = data[constants.CSV_OPEN_COLUMN]
 
-            full_load_path_test_data = os.path.join(test_data_path, file_name)
-            try:
-                macd, signal = load_macd(full_load_path_test_data)
-            except FileNotFoundError:
-                continue
-
-            start_capital = constants.STARTING_CAPITAL
-            result_capital = simulate_stock_market(best_genome, config, data_set, macd, signal, 35, start_capital)
-            print('{}: we have earned {}'.format(file_name, result_capital - start_capital))
+    start_capital = constants.STARTING_CAPITAL
+    result_capital = simulate_stock_market(best_genome, config, start_capital)
+    print('{}: we have earned {}'.format(ticker, result_capital - start_capital))
 
 
 if __name__ == '__main__':
+    ticker = "ACB"
     main()

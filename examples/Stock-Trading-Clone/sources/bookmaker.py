@@ -9,28 +9,37 @@ class Bookmaker:
         self.incomes_list = []
         self.expenses_list = []
 
-    def buy_one_stock(self, stock_price):
-        if self.capital > stock_price:
-            self.capital = self.capital - stock_price
-            self.expenses_list.append(stock_price)
-            self.number_of_stocks += 1
-
     # buy all stocks that bookmaker can afford
-    def buy_all_stocks(self, stock_price):
+    def buy_all_stocks(self, stock_price, date=''):
         how_many_stocks = math.floor(self.capital / stock_price)
         if how_many_stocks > 0:
             self.capital -= stock_price * how_many_stocks
             self.expenses_list.extend([stock_price] * how_many_stocks)
             self.number_of_stocks += how_many_stocks
+            if date:
+                print('Buy with price {} in {}'.format(stock_price, date))
+        # else:
+        #     print('------------------ Request a long with price {} in {}'.format(stock_price, date))
 
-    def sell_one_stock(self, stock_price):
+    def sell_all_stocks(self, stock_price, date=''):
         if self.number_of_stocks > 0:
-            self.capital += stock_price
-            self.incomes_list.append(stock_price)
-            self.number_of_stocks -= 1
-
-    def sell_all_stocks(self, stock_price):
-        if self.number_of_stocks > 0:
+            if date:
+                print('Sell with price {} in {}'.format(stock_price, date))
             self.capital += stock_price * self.number_of_stocks
             self.incomes_list.extend([stock_price] * self.number_of_stocks)
             self.number_of_stocks = 0
+        # else:
+        #     print('------------------ Request a short with price {} in {}'.format(stock_price, date))
+
+    def canBuyMore(self, stock_price):
+        how_many_stocks = math.floor(self.capital / stock_price)
+        if how_many_stocks > 0:
+            return True
+        else:
+            return False
+
+    def canSellStock(self):
+        if self.number_of_stocks > 0:
+            return True
+        else:
+            return False

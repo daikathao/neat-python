@@ -34,6 +34,11 @@ def training(genomes, config):
     input_index = input_index % len(input)
     rows_number = len(data_set.index)
 
+    ticker = "MBB"
+    savedFile = os.path.join(constants.ROOT_DIR, constants.PATH_STOCK_DATA, ticker + '.csv')
+    data = pd.read_csv(savedFile)
+    data_set = data[constants.CSV_OPEN_COLUMN]
+
     # starting simulation, from 35 because we need to omit all of the zeroes that appears during calculating MACD
     for i in range(35, rows_number):
         for j in range(0, len(bookmakers)):
@@ -69,31 +74,6 @@ def training(genomes, config):
                 ge.pop(bookmakers.index(bookmakers[j]))
                 bookmakers.pop(bookmakers.index(bookmakers[j]))
 
-
-def load_input_for_training(stock_data_path, training_data_path):
-    for _, _, file_names in os.walk(stock_data_path):
-        for file_name in file_names:
-            full_load_path_stock_data = os.path.join(stock_data_path, file_name)
-            data = pd.read_csv(full_load_path_stock_data)
-            data_set = data[constants.CSV_OPEN_COLUMN]
-
-            full_load_path_training_data = os.path.join(training_data_path, file_name)
-            try:
-                macd, signal = load_macd(full_load_path_training_data)
-            except FileNotFoundError:
-                continue
-            input.append((macd, signal, data_set))
-
-
-
-def load_macd(path):
-    with open(path + '_macd', 'rb') as fp:
-        macd = pickle.load(fp)
-    with open(path + '_signal', 'rb') as fp:
-        signal = pickle.load(fp)
-    return macd, signal
-
-
 def run(config_path):
     # creating configuration basing on our configuration file
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -108,17 +88,9 @@ def run(config_path):
     stats = neat.StatisticsReporter()
     population.add_reporter(stats)
 
-    training_data_path = os.path.join(constants.ROOT_DIR, constants.PATH_CALCULATED_MACD_TRAINING)
-    stock_data_path = os.path.join(constants.ROOT_DIR, constants.PATH_STOCK_DATA)
-
-    # load data to global variable
-    load_input_for_training(stock_data_path, training_data_path)
-
     # saving the best genome after completing the training
-    # Running as much generations as there is files in training directory
-    number_of_generations = len([name for name in os.listdir(training_data_path)])
-    number_of_generations /= 2  # divide by 2, because of the fact that for each file there is macd and signal file
-    winner = population.run(training, number_of_generations)
+    winner = population.run(training, constants.NUMBER_OF_GENERATIONS)
+
 
     # statistics of the best genome
     print('\nBest genome:\n{!s}'.format(winner))

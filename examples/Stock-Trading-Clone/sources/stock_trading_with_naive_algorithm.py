@@ -43,5 +43,5 @@ def main():
     print('{}: we have earned {}'.format(ticker, result_capital - start_capital))
 
 if __name__ == '__main__':
-    ticker = "MBB_2023"
+    ticker = "SAM_2023"
     main()

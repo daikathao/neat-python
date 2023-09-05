@@ -25,7 +25,6 @@ def training(genomes, config):
         ge.append(genome)
 
     # getting data for this generation
-    ticker = "MBB"
     savedFile = os.path.join(constants.ROOT_DIR, constants.PATH_STOCK_DATA, ticker + '.csv')
     data = pd.read_csv(savedFile)
     data_set = data[constants.CSV_OPEN_COLUMN]
@@ -43,30 +42,32 @@ def training(genomes, config):
             while pd.isnull(data_set[index]):
                 index -= 1
             if decision[0] > 0.9:
-                bookmakers[j].buy_all_stocks(data_set[index])
+                if bookmakers[j].canBuyMore(data_set[index]):
+                    bookmakers[j].buy_all_stocks(data_set[index])
             elif decision[0] < 0.1:
-                bookmakers[j].sell_all_stocks(data_set[index])
+                if bookmakers[j].canSellStock():
+                    bookmakers[j].sell_all_stocks(data_set[index])
 
-            # Increase fitness when bookmaker sold stock with profit
-            # Decrease fitness when bookmaker sold stock with loss
-            if len(bookmakers[j].incomes_list) > 0:
-                index = len(bookmakers[j].incomes_list) - 1
-                difference = bookmakers[j].incomes_list[index] - bookmakers[j].expenses_list[index]
-                if difference > 0:
-                    ge[j].fitness += 5
-                if difference <= 0:
-                    ge[j].fitness -= 10
+                    # Increase fitness when bookmaker sold stock with profit
+                    # Decrease fitness when bookmaker sold stock with loss
+                    if len(bookmakers[j].incomes_list) > 0:
+                        index = len(bookmakers[j].incomes_list) - 1
+                        difference = bookmakers[j].incomes_list[index] - bookmakers[j].expenses_list[index]
+                        if difference > 0:
+                            ge[j].fitness += 5
+                        if difference <= 0:
+                            ge[j].fitness -= 10
 
-                ge[j].fitness = ge[j].fitness + difference
-                bookmakers[j].incomes_list.pop()
-                bookmakers[j].expenses_list.pop()
+                        ge[j].fitness = ge[j].fitness + difference
+                        bookmakers[j].incomes_list.pop()
+                        bookmakers[j].expenses_list.pop()
 
-            # bookmaker is bankrupt, so delete it from further trading
-            if bookmakers[j].capital == 0 and bookmakers[j].number_of_stocks == 0:
-                ge[j].fitness -= 100
-                nets.pop(bookmakers.index(bookmakers[j]))
-                ge.pop(bookmakers.index(bookmakers[j]))
-                bookmakers.pop(bookmakers.index(bookmakers[j]))
+                    # bookmaker is bankrupt, so delete it from further trading
+                    if bookmakers[j].capital == 0 and bookmakers[j].number_of_stocks == 0:
+                        ge[j].fitness -= 100
+                        nets.pop(bookmakers.index(bookmakers[j]))
+                        ge.pop(bookmakers.index(bookmakers[j]))
+                        bookmakers.pop(bookmakers.index(bookmakers[j]))
 
 def run(config_path):
     # creating configuration basing on our configuration file
@@ -101,4 +102,5 @@ def main():
 
 
 if __name__ == '__main__':
+    ticker = "MBB"
     main()

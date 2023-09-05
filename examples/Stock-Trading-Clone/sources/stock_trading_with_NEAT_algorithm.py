@@ -17,7 +17,7 @@ def simulate_stock_market(best_genome, config, current_capital):
     signal = data['MACDs']
     rows_number = len(data.index)
 
-    for i in range(29, rows_number):
+    for i in range(0, rows_number):
         decision = net.activate((macd[i], signal[i]))  # decision can be a real number form 0 to 1
 
         # if there is a missing data cell, then substitute it with the latest stock value
@@ -57,5 +57,5 @@ def main():
 
 
 if __name__ == '__main__':
-    ticker = "ACB"
+    ticker = "MBB_2023"
     main()

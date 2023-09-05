@@ -12,7 +12,7 @@ class Bookmaker:
     # buy all stocks that bookmaker can afford
     def buy_all_stocks(self, stock_price, date=''):
         how_many_stocks = math.floor(self.capital / stock_price)
-        if how_many_stocks > 0:
+        if self.canBuyMore(stock_price):
             self.capital -= stock_price * how_many_stocks
             self.expenses_list.extend([stock_price] * how_many_stocks)
             self.number_of_stocks += how_many_stocks

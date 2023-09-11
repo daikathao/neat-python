@@ -35,7 +35,10 @@ def training(genomes, config):
     # starting simulation, from 35 because we need to omit all of the zeroes that appears during calculating MACD
     for i in range(35, rows_number):
         for j in range(0, len(bookmakers)):
-            decision = nets[j].activate((macd[i], signal[i]))  # decision can be a real number form 0 to 1
+            try:
+                decision = nets[j].activate((macd[i], signal[i]))  # decision can be a real number form 0 to 1
+            except (IndexError, ValueError):
+                continue
 
             # if there is a missing data cell, then substitute it with the latest stock value
             index = i
@@ -54,17 +57,16 @@ def training(genomes, config):
                         index = len(bookmakers[j].incomes_list) - 1
                         difference = bookmakers[j].incomes_list[index] - bookmakers[j].expenses_list[index]
                         if difference > 0:
-                            ge[j].fitness += 5
+                            ge[j].fitness += difference
                         if difference <= 0:
-                            ge[j].fitness -= 10
+                            ge[j].fitness += difference
 
                         ge[j].fitness = ge[j].fitness + difference
                         bookmakers[j].incomes_list.pop()
                         bookmakers[j].expenses_list.pop()
 
                     # bookmaker is bankrupt, so delete it from further trading
-                    if bookmakers[j].capital == 0 and bookmakers[j].number_of_stocks == 0:
-                        ge[j].fitness -= 100
+                    if bookmakers[j].capital < constants.STARTING_CAPITAL * 0.3 and bookmakers[j].number_of_stocks == 0:
                         nets.pop(bookmakers.index(bookmakers[j]))
                         ge.pop(bookmakers.index(bookmakers[j]))
                         bookmakers.pop(bookmakers.index(bookmakers[j]))

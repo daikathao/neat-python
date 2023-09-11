@@ -57,5 +57,5 @@ def main():
 
 
 if __name__ == '__main__':
-    ticker = "MBB_2023"
+    ticker = "VCB"
     main()
